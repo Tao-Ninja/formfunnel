@@ -1,4 +1,4 @@
-# Form Submission Bot Detectiona and Funnel Redirection
+# Form Submission Bot Detection and Funnel Redirection
 
 This serverless app is Open Source and runs on C#, optimized for Azure Functions.
 
