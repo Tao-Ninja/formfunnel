@@ -57,16 +57,47 @@ namespace Company.Function
 
                     var responseString = await response.Content.ReadAsStringAsync();
                     Dictionary<string,dynamic> responseData = JsonConvert.DeserializeObject<Dictionary<string,dynamic>>(responseString);
-                    log.LogInformation("Response Data." + JsonConvert.SerializeObject(responseData));
-
+                    
+                    // making dictionary for post to successTrigger and errorTrigger
+                    var innerClient = new HttpClient();
+                    Dictionary<string,dynamic> requestbody = new Dictionary<string, dynamic>();
+                    if (responseData.ContainsKey("score"))
+                    {
+                        requestbody["token"] = token;
+                        requestbody["score"] = Convert.ToDouble(responseData["score"]);
+                    }
+                    
+                    
+                    // If success 
                     if (responseData.ContainsKey("success") && responseData.ContainsKey("score") && "true".Equals(responseData["success"].ToString())  && (Convert.ToDouble(responseData["score"]) >= 0.5))
                     {
                         // redirect uri in global environment with name "successTrigger"
-                        return new RedirectResult(Environment.GetEnvironmentVariable("successTrigger"), true);
+                        try
+                        {
+                            HttpResponseMessage responseMessage = await innerClient.PostAsJsonAsync(Environment.GetEnvironmentVariable("successTrigger"),requestbody);
+                        }
+                        catch(Exception){}
+
+
+
+                        responseDict["message"] = "Human";
+                        responseDict["success"] = true;
+                        responseDict["data"] = responseData;
+                        return new OkObjectResult(responseDict);
                     }
+                    // if not success
                     else if (responseData.ContainsKey("success") && "true".Equals(responseData["success"].ToString()))
                     {
+                        try
+                        {
+                            HttpResponseMessage responseMessage = await innerClient.PostAsJsonAsync(Environment.GetEnvironmentVariable("errorTrigger"),requestbody);
+                        }
+                        catch(Exception){}
+
+
+
                         responseDict["message"] = "Not Human";
+                        responseDict["data"] = responseData;
                         return new BadRequestObjectResult(responseDict);
                     }
                     responseDict["message"] = "Error Response";
