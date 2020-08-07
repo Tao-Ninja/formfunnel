@@ -4,14 +4,13 @@
 # Azure Functions localsettings file
 local.settings.json
 
-# bin and obj file
-bin
+# bin and obj file names
+# bin
 obj
 packages
 *.DS_Store
-host.json
-# csproj
-formfunnel.csproj
+# csproj file name
+# formfunnel.csproj
 
 ## vs code file ifnore
 .vscode/
