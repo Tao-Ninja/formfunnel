@@ -61,8 +61,8 @@ namespace Company.Function
 
                     if (responseData.ContainsKey("success") && responseData.ContainsKey("score") && "true".Equals(responseData["success"].ToString())  && (Convert.ToDouble(responseData["score"]) >= 0.5))
                     {
-                        // redirect uri in global environment with name "RedirectUri"
-                        return new RedirectResult(Environment.GetEnvironmentVariable("RedirectUri"), true);
+                        // redirect uri in global environment with name "successTrigger"
+                        return new RedirectResult(Environment.GetEnvironmentVariable("successTrigger"), true);
                     }
                     else if (responseData.ContainsKey("success") && "true".Equals(responseData["success"].ToString()))
                     {
