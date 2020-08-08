@@ -71,7 +71,7 @@ namespace Company.Function
                     
                     
                     // If success 
-                    if (responseData.ContainsKey("success") && responseData.ContainsKey("score") && "true".Equals(responseData["success"].ToString())  && (Convert.ToDouble(responseData["score"]) >= 0.5))
+                    if (responseData.ContainsKey("success") && responseData.ContainsKey("score")  && responseData["success"] &&(responseData["score"] >= 0.5))
                     {
                         // redirect uri in global environment with name "successTrigger"
                         try
@@ -79,30 +79,27 @@ namespace Company.Function
                             HttpResponseMessage responseMessage = await innerClient.PostAsJsonAsync(Environment.GetEnvironmentVariable("successTrigger"),requestbody);
                         }
                         catch(Exception){}
-
-
-
                         responseDict["message"] = "Human";
                         responseDict["success"] = true;
                         responseDict["data"] = responseData;
                         return new OkObjectResult(responseDict);
                     }
                     // if not success
-                    else if (responseData.ContainsKey("success") && "true".Equals(responseData["success"].ToString()))
+                    else if (responseData.ContainsKey("success") && responseData["success"])
                     {
                         try
                         {
                             HttpResponseMessage responseMessage = await innerClient.PostAsJsonAsync(Environment.GetEnvironmentVariable("errorTrigger"),requestbody);
                         }
                         catch(Exception){}
-
-
-
                         responseDict["message"] = "Not Human";
                         responseDict["data"] = responseData;
                         return new BadRequestObjectResult(responseDict);
                     }
+
+                    
                     responseDict["message"] = "Error Response";
+                    responseDict["data"] = responseData;
                     return new BadRequestObjectResult(responseDict);
             }
         }
