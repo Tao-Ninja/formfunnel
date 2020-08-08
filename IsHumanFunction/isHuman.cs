@@ -34,6 +34,8 @@ namespace Company.Function
                     responseDict["message"] = "Please pass token in body";
                     return new BadRequestObjectResult(responseDict);
                 }
+
+                
                 // validate recaptcha token
                 using (var client = new HttpClient())
                 {
