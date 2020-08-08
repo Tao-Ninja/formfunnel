@@ -71,7 +71,7 @@ namespace Company.Function
                     
                     
                     // If success 
-                    if (responseData.ContainsKey("success") && responseData.ContainsKey("score")  && responseData["success"] &&(responseData["score"] >= 0.5))
+                    if (responseData.ContainsKey("success") && responseData.ContainsKey("score")  && responseData["success"] &&(responseData["score"] >= Environment.GetEnvironmentVariable("captchaScore")))
                     {
                         // redirect uri in global environment with name "successTrigger"
                         try
@@ -97,7 +97,7 @@ namespace Company.Function
                         return new BadRequestObjectResult(responseDict);
                     }
 
-                    
+
                     responseDict["message"] = "Error Response";
                     responseDict["data"] = responseData;
                     return new BadRequestObjectResult(responseDict);
