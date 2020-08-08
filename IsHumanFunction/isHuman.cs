@@ -71,7 +71,7 @@ namespace Company.Function
                     
                     
                     // If success 
-                    if (responseData.ContainsKey("success") && responseData.ContainsKey("score")  && responseData["success"] &&(responseData["score"] >= Environment.GetEnvironmentVariable("captchaScore")))
+                    if (responseData.ContainsKey("success") && responseData.ContainsKey("score")  && responseData["success"] &&(responseData["score"] >= (Convert.ToInt16(Environment.GetEnvironmentVariable("captchaScore")))/10))
                     {
                         // redirect uri in global environment with name "successTrigger"
                         try
