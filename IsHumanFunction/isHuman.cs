@@ -15,7 +15,7 @@ namespace Company.Function
 {
     public static class isHuman
     {
-        [FunctionName("isHumanFunctionName")]
+        [FunctionName("isHuman")]
         public static async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "isHuman")] HttpRequest req,
             ILogger log)
@@ -25,17 +25,25 @@ namespace Company.Function
             responseDict["success"] = false;
             try
             {
-                string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
-                dynamic data = JsonConvert.DeserializeObject(requestBody);
-                string token = data?.token;
+                // string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
+                // dynamic data = JsonConvert.DeserializeObject(requestBody);
+                // string token = data?.token;
+                IFormCollection formCollection = req.Form;
+                string token = formCollection["token"];
+                ICollection<string> keys= formCollection.Keys;
+                var urlEncodedDctionaryData = new Dictionary<string, string>();
+                foreach(string obj in keys)
+                {
+                    urlEncodedDctionaryData.Add(obj,Convert.ToString(formCollection[obj]));
+                }
+
 
                 if (string.IsNullOrWhiteSpace(token))
                 {
                     responseDict["message"] = "Please pass token in body";
+                    log.LogInformation("LogInfo: Please pass token in body");
                     return new BadRequestObjectResult(responseDict);
                 }
-
-                
                 // validate recaptcha token
                 using (var client = new HttpClient())
                 {
@@ -52,6 +60,7 @@ namespace Company.Function
                     if (!response.IsSuccessStatusCode)
                     {
                         responseDict["message"] = "Recaptcha rejected our request";
+                        log.LogInformation("LogInfo: Recaptcha rejected our request");
                         return new BadRequestObjectResult(responseDict);
                     }
 
@@ -62,11 +71,9 @@ namespace Company.Function
                     
                     // making dictionary for post to successTrigger and errorTrigger
                     var innerClient = new HttpClient();
-                    Dictionary<string,dynamic> requestbody = new Dictionary<string, dynamic>();
                     if (responseData.ContainsKey("score"))
                     {
-                        requestbody["token"] = token;
-                        requestbody["score"] = Convert.ToDouble(responseData["score"]);
+                        urlEncodedDctionaryData.Add("score",Convert.ToString(Convert.ToInt16(responseData["score"])/10));
                     }
                     
                     
@@ -76,9 +83,19 @@ namespace Company.Function
                         // redirect uri in global environment with name "successTrigger"
                         try
                         {
-                            HttpResponseMessage responseMessage = await innerClient.PostAsJsonAsync(Environment.GetEnvironmentVariable("successTrigger"),requestbody);
+                            HttpResponseMessage responseMessage = await innerClient.PostAsync(Environment.GetEnvironmentVariable("successTrigger"), new FormUrlEncodedContent(urlEncodedDctionaryData));
+                            if (responseMessage.IsSuccessStatusCode)
+                            {
+                                log.LogInformation("LogInfo: successTrigger hit successfully with params"  + urlEncodedDctionaryData.ToString());
+                            }
+                            else
+                            {
+                            log.LogInformation("LogInfo: successTrigger fails with params" + responseMessage.RequestMessage.ToString() );
+                            }
                         }
-                        catch(Exception){}
+                        catch(Exception){
+                            log.LogInformation("LogInfo: successTrigger fails" );
+                        }
                         responseDict["message"] = "Human";
                         responseDict["success"] = true;
                         responseDict["data"] = responseData;
@@ -89,23 +106,35 @@ namespace Company.Function
                     {
                         try
                         {
-                            HttpResponseMessage responseMessage = await innerClient.PostAsJsonAsync(Environment.GetEnvironmentVariable("errorTrigger"),requestbody);
+                            HttpResponseMessage responseMessage = await innerClient.PostAsJsonAsync(Environment.GetEnvironmentVariable("errorTrigger"),new FormUrlEncodedContent(urlEncodedDctionaryData));
+                            if (responseMessage.IsSuccessStatusCode)
+                            {
+                            log.LogInformation("LogInfo: errorTrigger hit successfully with params"  + urlEncodedDctionaryData.ToString());
+
+                            }
+                            else
+                            {
+                            log.LogInformation("LogInfo: errorTrigger fails with params" + responseMessage.RequestMessage.ToString() );
+
+                            }
                         }
-                        catch(Exception){}
+                        catch(Exception){
+                            log.LogInformation("LogInfo: errorTrigger fails" );
+                        }
                         responseDict["message"] = "Not Human";
                         responseDict["data"] = responseData;
                         return new BadRequestObjectResult(responseDict);
                     }
-
-
                     responseDict["message"] = "Error Response";
                     responseDict["data"] = responseData;
+                    log.LogInformation("LogInfo: Error Response");
                     return new BadRequestObjectResult(responseDict);
             }
         }
         catch(Exception ex)
         {
             responseDict["message"] = "Error Response: "+ ex.ToString();
+            log.LogInformation("LogInfo: Error Response: "+ ex.ToString());
             return new BadRequestObjectResult(responseDict);
         }
     }
