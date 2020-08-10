@@ -15,7 +15,8 @@ namespace Company.Function
 {
     public static class isHuman
     {
-        [FunctionName("Form")]
+        
+        [FunctionName("form")]
         public static async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "form")] HttpRequest req,
             ILogger log)
