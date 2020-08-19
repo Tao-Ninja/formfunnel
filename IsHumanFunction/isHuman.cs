@@ -85,9 +85,9 @@ namespace Company.Function
                         try
                         {
                             string triggerName = "successTrigger";
-                            if (urlEncodedDctionaryData.ContainsKey("formKey"))
+                            if (urlEncodedDctionaryData.ContainsKey("formType"))
                             {
-                                triggerName = urlEncodedDctionaryData["formKey"].ToLower() +  "Trigger";
+                                triggerName = urlEncodedDctionaryData["formType"].ToLower() +  "Trigger";
                             }
 
                             HttpResponseMessage responseMessage = await innerClient.PostAsync(Environment.GetEnvironmentVariable(triggerName), new FormUrlEncodedContent(urlEncodedDctionaryData));
