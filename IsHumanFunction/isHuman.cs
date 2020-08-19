@@ -84,7 +84,13 @@ namespace Company.Function
                         // redirect uri in global environment with name "successTrigger"
                         try
                         {
-                            HttpResponseMessage responseMessage = await innerClient.PostAsync(Environment.GetEnvironmentVariable("successTrigger"), new FormUrlEncodedContent(urlEncodedDctionaryData));
+                            string triggerName = "successTrigger";
+                            if (urlEncodedDctionaryData.ContainsKey("formKey"))
+                            {
+                                triggerName = urlEncodedDctionaryData["formKey"].ToLower() +  "Trigger";
+                            }
+
+                            HttpResponseMessage responseMessage = await innerClient.PostAsync(Environment.GetEnvironmentVariable(triggerName), new FormUrlEncodedContent(urlEncodedDctionaryData));
                             if (responseMessage.IsSuccessStatusCode)
                             {
                                 log.LogInformation("LogInfo: successTrigger hit successfully with params"  + urlEncodedDctionaryData.ToString());
